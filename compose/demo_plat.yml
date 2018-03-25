@@ -1,0 +1,93 @@
+elasticsearch:
+  container_name: elasticsearch
+  restart: always
+  image: lee442/elasticsearch:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  command: elasticsearch 
+  ports:
+    - "9200:9200"
+  volumes:
+    - elasticsearch_data:/usr/share/elasticsearch/data
+
+logstash:
+  container_name: logstash
+  restart: always
+  image: lee442/logstash:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  environment:
+    - LS_HEAP_SIZE=1024m
+  command: logstash
+  ports:
+    - "12201:12201/udp"
+    - "25826:25826/udp"
+    - "5000:5000/tcp"
+    - "5044:5044/tcp"
+
+kibana:
+  container_name: kibana
+  restart: always
+  image: lee442/kibana:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  command: kibana
+  environment:
+    - ELASTICSEARCH_URL=http://elasticsearch:9200
+  ports:
+    - "5601:5601"
+
+nginx:
+  container_name: nginx
+  restart: always
+  image: lee442/nginx:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  ports:
+    - "80:80"
+    - "443:443"
+
+heartbeat:
+  container_name: heartbeat
+  restart: always
+  image: lee442/heartbeat:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+
+node:
+  container_name: node
+  restart: always
+  image: lee442/node:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  command: /root/ip_generator.sh
+  volumes:
+    - shared_data:/shared_mount/
+
+filebeat:
+  container_name: filebeat
+  restart: always
+  image: lee442/filebeat:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  volumes:
+    - shared_data:/shared_mount/
+
+metricbeat:
+  container_name: metricbeat
+  restart: always
+  image: lee442/metricbeat:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+
+packetbeat:
+  container_name: packetbeat
+  restart: always
+  image: lee442/packetbeat:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  cap_add:
+    - NET_ADMIN
+
+auditbeat:
+  container_name: auditbeat 
+  restart: always
+  image: lee442/auditbeat:0.0.1
+  net: ${CUSTOM_NETWORK_NAME}
+  cap_add:
+    - AUDIT_CONTROL
+    - AUDIT_READ
+  volumes:
+    - shared_data:/shared_mount/
+  pid: "host"
